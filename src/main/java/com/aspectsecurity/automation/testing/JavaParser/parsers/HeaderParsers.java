@@ -21,7 +21,7 @@ public class HeaderParsers {
 			logger.debug("Found at least one header assignment.");
 			//Stick whatever we have in an array - if it's just one header, we're good. If not, we'll replace the array contents later
 			headers[0] = new Parameter(attribute.getValue().replaceAll("\"", "").trim().split("=")[0], attribute.getValue().replaceAll("\"", "").trim().split("=")[1]);
-			logger.debug("Attempting to add header: " + headers[0].getName() + " = " + headers[0].getValue());
+			logger.debug("Attempting to add header: " + headers[0].getHttpParameterName() + " = " + headers[0].getDefaultValue());
 		}
 		//remove array notation (ex. { item1=blah, item2=blah2 }) and put each item in its own index in "headers"
 		if(attribute.getValue().trim().startsWith("{")){ //multiple headers to add
@@ -29,7 +29,7 @@ public class HeaderParsers {
 			
 			for(int i = 0; i < tempArray.length; i++){
 				headers[i] = new Parameter(tempArray[i].split("=")[0].trim(), tempArray[i].split("=")[1].trim());
-				logger.debug("Setting header: " + headers[i].getName() + " = " + headers[i].getValue());
+				logger.debug("Setting header: " + headers[i].getHttpParameterName() + " = " + headers[i].getDefaultValue());
 			}
 		}
 		return headers;

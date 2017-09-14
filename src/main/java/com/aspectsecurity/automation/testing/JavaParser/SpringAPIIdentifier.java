@@ -22,8 +22,18 @@ public class SpringAPIIdentifier {
 		Logger logger = LoggerFactory.getLogger(SpringAPIIdentifier.class);
 
 		// Assumes this file is part of this project
-		FileInputStream in = new FileInputStream(System.getProperty("user.dir")
+		findEndpoints(System.getProperty("user.dir")
 				+ "\\src\\test\\resources\\com\\aspectsecurity\\automation\\testing\\JavaParser\\test\\RequestMappingExample.java");
+		findEndpoints(System.getProperty("user.dir")
+				+ "\\src\\test\\resources\\com\\aspectsecurity\\automation\\testing\\JavaParser\\test\\SpringEndpointParametersExample.java");
+
+	}
+	
+	public static void findEndpoints(String file) throws FileNotFoundException{
+		Logger logger = LoggerFactory.getLogger(SpringAPIIdentifier.class);
+
+		// Assumes this file is part of this project
+		FileInputStream in = new FileInputStream(file);
 
 		// parse it
 		CompilationUnit cu = JavaParser.parse(in);
@@ -34,7 +44,7 @@ public class SpringAPIIdentifier {
 		logger.debug("Printing Endpoint Info:");
 		for (Endpoint endpoint : endpoints) {
 			logger.info("=====================================================");
-			logger.info("Name: " + endpoint.getName());
+			logger.info("Name: " + (endpoint.getName() == null ? "<N/A>" : endpoint.getName()));
 			logger.info("URL: " + endpoint.getUrl());
 			logger.info("HTTP Methods: " + endpoint.getMethods().toString());
 			logger.info("Consumes: " + endpoint.getConsumes().toString());
@@ -42,10 +52,13 @@ public class SpringAPIIdentifier {
 			logger.info("Part of class: "+ endpoint.getClazzName());
 			logger.info("Headers:");
 			for (Parameter header : endpoint.getHeaders()){
-				 logger.info("\t\t" + header.getName() + " = " + header.getValue());
+				 logger.info("\t\t" + header.getHttpParameterName() + " = " + header.getDefaultValue());
+			}
+			logger.info("Parameters:");
+			for(Parameter param : endpoint.getParams()){
+				logger.info("\t\t" + param.getHttpParameterName() + " is a " + param.getAnnotation() + " of type " + param.getType() + " and a default value of " + (param.getDefaultValue().equals("")?"<N/A>":param.getDefaultValue())+ ". This input " + (param.isRequired() ? "is ": "is not ") + "required.");
 			}
 		}
-
 	}
 	
 	public static ArrayList<Endpoint> getEndpoints() {
@@ -57,6 +70,7 @@ public class SpringAPIIdentifier {
 	}
 	
 	public static void addEndpoint(Endpoint endpoint){
+		//what do we do if we already have this endpoint? (ex. 2 endpoints with the same path are found) Right now, we'll end up with both. Is this the best in the long-run?
 		SpringAPIIdentifier.endpoints.add(endpoint);
 	}
 }
