@@ -2,7 +2,13 @@ package com.aspectsecurity.automation.testing.JavaParser;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,15 +24,25 @@ public class SpringAPIIdentifier {
 
 	private static ArrayList<Endpoint> endpoints = new ArrayList<Endpoint>();;
 
-	public static void main(String[] args) throws FileNotFoundException {
+	public static void main(String[] args) throws IOException {
 		Logger logger = LoggerFactory.getLogger(SpringAPIIdentifier.class);
 
-		// Assumes this file is part of this project
-		findEndpoints(System.getProperty("user.dir")
-				+ "\\src\\test\\resources\\com\\aspectsecurity\\automation\\testing\\JavaParser\\test\\RequestMappingExample.java");
-		findEndpoints(System.getProperty("user.dir")
-				+ "\\src\\test\\resources\\com\\aspectsecurity\\automation\\testing\\JavaParser\\test\\SpringEndpointParametersExample.java");
-
+		//by default, we'll look at our test dir, but if someone passes in a path, we'll use that instead
+		String filePath = System.getProperty("user.dir")+"\\src\\test\\resources\\com\\aspectsecurity\\automation\\testing\\JavaParser\\test\\";
+		if (args.length > 0){
+			filePath = args[0];
+		}
+		ArrayList<Path> files = new ArrayList<Path>();
+		//Find all files that end in .java
+		Stream<Path> paths = Files.find(Paths.get(filePath), Integer.MAX_VALUE, (path,attrs) -> attrs.isRegularFile() && path.toString().endsWith(".java"));
+		paths.forEach(files::add);
+		paths.close();
+		
+		for(Path file : files){
+			logger.debug("Found file: " + file.toFile().toString());
+			findEndpoints(file.toFile().toString());
+			
+		}
 	}
 	
 	public static void findEndpoints(String file) throws FileNotFoundException{
