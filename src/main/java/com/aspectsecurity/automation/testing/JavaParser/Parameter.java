@@ -6,6 +6,15 @@ public class Parameter {
 	private String value;
 	private String type;
 	
+	public Parameter(String name, String value){
+		this.name = name;
+		this.value = value;
+	}
+	
+	public Parameter() {
+		// TODO Auto-generated constructor stub
+	}
+
 	public String getName() {
 		return name;
 	}
