@@ -1,4 +1,4 @@
-package com.aspectsecurity.automation.testing.JavaParser;
+package com.aspectsecurity.automation.testing.JavaParser.objects;
 
 import java.util.ArrayList;
 
