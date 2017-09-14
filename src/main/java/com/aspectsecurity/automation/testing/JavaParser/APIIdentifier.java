@@ -67,6 +67,29 @@ public class APIIdentifier {
 	static class MethodVisitor extends VoidVisitorAdapter<Optional<PackageDeclaration>> {
 		Logger logger = LoggerFactory.getLogger(MethodVisitor.class);
 
+		@Override
+		public void visit(MethodDeclaration n, Optional<PackageDeclaration> clazzPackage) {
+
+			/* CHECK METHOD-LEVEL ANNOTATIONS FOR URL AND HTTP METHOD */
+
+			// We found a new method to look at
+			logger.debug("Method Name: " + n.getName());
+			String methodClazzName = getClassNameFromMethod(n);
+
+			// Get all annotations on method
+			NodeList<AnnotationExpr> nodeList = n.getAnnotations();
+			for (AnnotationExpr annotation : nodeList) {
+
+				// Found an annotation on the method
+				logger.debug("Found annotation: " + annotation.getNameAsString());
+				if (annotation.getNameAsString().equals("RequestMapping")) {
+					handleRequestMappingFound(annotation, clazzPackage.get().getName().toString(), methodClazzName);
+				}
+			}
+
+			super.visit(n, clazzPackage);
+		}
+		
 		private String getClassNameFromMethod(MethodDeclaration n) {
 			Optional<ClassOrInterfaceDeclaration> methodClazzNode = null;
 			String methodClazzName = null;
@@ -166,7 +189,7 @@ public class APIIdentifier {
 						//"headers" = headers
 						
 						logger.debug("Found at least one header... " + attribute.getValue());
-						Parameter[] headers = new Parameter[10]; // capping at 10 methods arbitrarily...
+						Parameter[] headers = new Parameter[10]; // capping at 10 headers arbitrarily...
 						if(!attribute.getValue().contains("=")){ //if there is no "=" something is probably wrong (header with a name, but no value), but we should handle it anyway
 							logger.debug("Didn't find an \"=\" in header assignment. Weird.");
 							headers[0]=new Parameter(attribute.getValue().replaceAll("\"", ""), "");
@@ -176,8 +199,9 @@ public class APIIdentifier {
 							headers[0] = new Parameter(attribute.getValue().replaceAll("\"", "").trim().split("=")[0], attribute.getValue().replaceAll("\"", "").trim().split("=")[1]);
 							logger.debug("Attempting to add header: " + headers[0].getName() + " = " + headers[0].getValue());
 						}
-						if(attribute.getValue().trim().startsWith("{")){ //multiple methods to add
-							String[] tempArray = attribute.getValue().replaceAll("\\{", "").replaceAll("\\}", "").trim().split(","); //remove array notation (ex. { item1=blah, item2=blah2 }) and put each item in its own index in "methods"
+						//remove array notation (ex. { item1=blah, item2=blah2 }) and put each item in its own index in "headers"
+						if(attribute.getValue().trim().startsWith("{")){ //multiple headers to add
+							String[] tempArray = attribute.getValue().replaceAll("\\{", "").replaceAll("\\}", "").trim().split(","); 
 							
 							for(int i = 0; i < tempArray.length; i++){
 								headers[i] = new Parameter(tempArray[i].split("=")[0].trim(), tempArray[i].split("=")[1].trim());
@@ -194,14 +218,15 @@ public class APIIdentifier {
 					}  else if (attribute.getName().equals("produces")) {
 						// "produces" = output format
 						
-						String[] produces = new String[10]; // capping at 10 methods arbitrarily...
-						produces[0] = attribute.getValue().replaceAll("\"", "").trim(); //Stick whatever we have in an array - if it's just one method, we're good. If not, we'll replace the array contents later
+						String[] produces = new String[10]; // capping at 10 output formats arbitrarily...
+						produces[0] = attribute.getValue().replaceAll("\"", "").trim(); //Stick whatever we have in an array - if it's just one produces, we're good. If not, we'll replace the array contents later
 						
-						if(attribute.getValue().trim().startsWith("{")){ //multiple methods to add
-							produces = attribute.getValue().replaceAll("\\{", "").replaceAll("\\}", "").trim().split(","); //remove array notation (ex. { item1, item2 }) and put each item in its own index in "methods"
+						//remove array notation (ex. { item1, item2 }) and put each item in its own index in "produces"
+						if(attribute.getValue().trim().startsWith("{")){ //multiple "produces" to add
+							produces = attribute.getValue().replaceAll("\\{", "").replaceAll("\\}", "").trim().split(","); 
 						} 
 							for(String outputFormat : produces){
-								if(outputFormat != null){ //the array will have a bunch of empty spots, unless 10 HTTP Methods are supported
+								if(outputFormat != null){ //the array will have a bunch of empty spots, unless 10 output formats are supported
 									logger.debug("Adding Method: " + outputFormat);
 									newEndpoint.addProduces(outputFormat);
 									logger.debug("added method: " + outputFormat);
@@ -211,14 +236,15 @@ public class APIIdentifier {
 					}  else if (attribute.getName().equals("consumes")) {
 						// "consumes" = ingest format
 						
-						String[] consumes = new String[10]; // capping at 10 methods arbitrarily...
-						consumes[0] = attribute.getValue().replaceAll("\"", "").trim(); //Stick whatever we have in an array - if it's just one method, we're good. If not, we'll replace the array contents later
+						String[] consumes = new String[10]; // capping at 10 ingest formats arbitrarily...
+						consumes[0] = attribute.getValue().replaceAll("\"", "").trim(); //Stick whatever we have in an array - if it's just one consumes, we're good. If not, we'll replace the array contents later
 						
-						if(attribute.getValue().trim().startsWith("{")){ //multiple methods to add
-							consumes = attribute.getValue().replaceAll("\\{", "").replaceAll("\\}", "").trim().split(","); //remove array notation (ex. { item1, item2 }) and put each item in its own index in "methods"
+						//remove array notation (ex. { item1, item2 }) and put each item in its own index in "consumes"
+						if(attribute.getValue().trim().startsWith("{")){ //multiple "consumes" to add
+							consumes = attribute.getValue().replaceAll("\\{", "").replaceAll("\\}", "").trim().split(","); 
 						} 
 							for(String ingestFormat : consumes){
-								if(ingestFormat != null){ //the array will have a bunch of empty spots, unless 10 HTTP Methods are supported
+								if(ingestFormat != null){ //the array will have a bunch of empty spots, unless 10 ingest formats are supported
 									logger.debug("Adding Method: " + ingestFormat);
 									newEndpoint.addConsumes(ingestFormat);
 									logger.debug("added method: " + ingestFormat);
@@ -242,28 +268,8 @@ public class APIIdentifier {
 			logger.debug("");
 		}
 
-		@Override
-		public void visit(MethodDeclaration n, Optional<PackageDeclaration> clazzPackage) {
 
-			/* CHECK METHOD-LEVEL ANNOTATIONS FOR URL AND HTTP METHOD */
-
-			// We found a new method to look at
-			logger.debug("Method Name: " + n.getName());
-			String methodClazzName = getClassNameFromMethod(n);
-
-			// Get all annotations on method
-			NodeList<AnnotationExpr> nodeList = n.getAnnotations();
-			for (AnnotationExpr annotation : nodeList) {
-
-				// Found an annotation on the method
-				logger.debug("Found annotation: " + annotation.getNameAsString());
-				if (annotation.getNameAsString().equals("RequestMapping")) {
-					handleRequestMappingFound(annotation, clazzPackage.get().getName().toString(), methodClazzName);
-				}
-			}
-
-			super.visit(n, clazzPackage);
-		}
+		
 	}
 	/*
 	 * 
