@@ -1,9 +1,9 @@
-package com.aspectsecurity.automation.testing.JavaParser.Parsers;
+package com.aspectsecurity.automation.testing.JavaParser.parsers;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.aspectsecurity.automation.testing.JavaParser.APIIdentifier;
+import com.aspectsecurity.automation.testing.JavaParser.SpringAPIIdentifier;
 import com.aspectsecurity.automation.testing.JavaParser.objects.AnnotationAttribute;
 import com.aspectsecurity.automation.testing.JavaParser.objects.Parameter;
 
@@ -11,7 +11,7 @@ public class HeaderParsers {
 
 	
 	public static Parameter[] parseSpringRequestMappingHeaders(AnnotationAttribute attribute){
-		Logger logger = LoggerFactory.getLogger(APIIdentifier.class);
+		Logger logger = LoggerFactory.getLogger(SpringAPIIdentifier.class);
 		
 		Parameter[] headers = new Parameter[10]; // capping at 10 headers arbitrarily...
 		if(!attribute.getValue().contains("=")){ //if there is no "=" something is probably wrong (header with a name, but no value), but we should handle it anyway

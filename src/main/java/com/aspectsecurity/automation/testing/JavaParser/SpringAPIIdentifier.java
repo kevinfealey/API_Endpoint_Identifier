@@ -9,28 +9,27 @@ import org.slf4j.LoggerFactory;
 
 import com.aspectsecurity.automation.testing.JavaParser.objects.Endpoint;
 import com.aspectsecurity.automation.testing.JavaParser.objects.Parameter;
-import com.aspectsecurity.automation.testing.JavaParser.visitors.AnnotationAnalyzer;
+import com.aspectsecurity.automation.testing.JavaParser.visitors.SpringAnnotationAnalyzer;
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
 
-public class APIIdentifier {
+public class SpringAPIIdentifier {
 
-	private static ArrayList<Endpoint> endpoints;
+	private static ArrayList<Endpoint> endpoints = new ArrayList<Endpoint>();;
 
 	public static void main(String[] args) throws FileNotFoundException {
-		Logger logger = LoggerFactory.getLogger(APIIdentifier.class);
-		endpoints = new ArrayList<Endpoint>();
+		Logger logger = LoggerFactory.getLogger(SpringAPIIdentifier.class);
 
 		// Assumes this file is part of this project
 		FileInputStream in = new FileInputStream(System.getProperty("user.dir")
-				+ "\\src\\test\\resources\\com\\aspectsecurity\\automation\\testing\\JavaParser\\test\\Endpoint2.java");
+				+ "\\src\\test\\resources\\com\\aspectsecurity\\automation\\testing\\JavaParser\\test\\RequestMappingExample.java");
 
 		// parse it
 		CompilationUnit cu = JavaParser.parse(in);
 
 		// visit and print the methods names
-		cu.accept(new AnnotationAnalyzer(), cu.getPackageDeclaration());
+		cu.accept(new SpringAnnotationAnalyzer(), cu.getPackageDeclaration());
 
 		logger.debug("Printing Endpoint Info:");
 		for (Endpoint endpoint : endpoints) {
@@ -54,11 +53,11 @@ public class APIIdentifier {
 	}
 
 	public static void setEndpoints(ArrayList<Endpoint> endpoints) {
-		APIIdentifier.endpoints = endpoints;
+		SpringAPIIdentifier.endpoints = endpoints;
 	}
 	
 	public static void addEndpoint(Endpoint endpoint){
-		APIIdentifier.endpoints.add(endpoint);
+		SpringAPIIdentifier.endpoints.add(endpoint);
 	}
 }
 

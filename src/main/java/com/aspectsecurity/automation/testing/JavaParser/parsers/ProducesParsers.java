@@ -1,4 +1,4 @@
-package com.aspectsecurity.automation.testing.JavaParser.Parsers;
+package com.aspectsecurity.automation.testing.JavaParser.parsers;
 
 import com.aspectsecurity.automation.testing.JavaParser.objects.AnnotationAttribute;
 

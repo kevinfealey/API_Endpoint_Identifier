@@ -8,14 +8,14 @@ import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.aspectsecurity.automation.testing.JavaParser.APIIdentifier;
-import com.aspectsecurity.automation.testing.JavaParser.Parsers.ConsumesParsers;
-import com.aspectsecurity.automation.testing.JavaParser.Parsers.HeaderParsers;
-import com.aspectsecurity.automation.testing.JavaParser.Parsers.HttpMethodParsers;
-import com.aspectsecurity.automation.testing.JavaParser.Parsers.ProducesParsers;
+import com.aspectsecurity.automation.testing.JavaParser.SpringAPIIdentifier;
 import com.aspectsecurity.automation.testing.JavaParser.objects.AnnotationAttribute;
 import com.aspectsecurity.automation.testing.JavaParser.objects.Endpoint;
 import com.aspectsecurity.automation.testing.JavaParser.objects.Parameter;
+import com.aspectsecurity.automation.testing.JavaParser.parsers.ConsumesParsers;
+import com.aspectsecurity.automation.testing.JavaParser.parsers.HeaderParsers;
+import com.aspectsecurity.automation.testing.JavaParser.parsers.HttpMethodParsers;
+import com.aspectsecurity.automation.testing.JavaParser.parsers.ProducesParsers;
 import com.github.javaparser.ast.Node;
 import com.github.javaparser.ast.NodeList;
 import com.github.javaparser.ast.PackageDeclaration;
@@ -28,8 +28,8 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 /**
 	 * Simple visitor implementation for visiting MethodDeclaration nodes.
 	 */
-	public class AnnotationAnalyzer extends VoidVisitorAdapter<Optional<PackageDeclaration>> {
-		Logger logger = LoggerFactory.getLogger(AnnotationAnalyzer.class);
+	public class SpringAnnotationAnalyzer extends VoidVisitorAdapter<Optional<PackageDeclaration>> {
+		Logger logger = LoggerFactory.getLogger(SpringAnnotationAnalyzer.class);
 
 		@Override
 		public void visit(MethodDeclaration n, Optional<PackageDeclaration> clazzPackage) {
@@ -79,6 +79,7 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 
 		}
 
+		//Handles everything to do with the @RequestMapping annotation in Spring
 		private void handleRequestMappingFound(AnnotationExpr annotation, String clazzPackageName,
 				String methodClazzName) {
 			// This usually means we have a new endpoint
@@ -191,9 +192,9 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 				}
 
 			}
-			// Add all our endpoints and associated data to an array because idk
-			// how to return it...
-			APIIdentifier.addEndpoint(newEndpoint);
+			// Add all our endpoints and associated data to an array in SpringAPIIdentifier because idk
+			// how to return it... we should look for a better option that storing in this static object
+			SpringAPIIdentifier.addEndpoint(newEndpoint);
 			logger.debug("");
 			logger.debug("-----------------------------------------------");
 			logger.debug("");
