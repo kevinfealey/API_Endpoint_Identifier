@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.util.ArrayList;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -19,184 +18,192 @@ import com.aspectsecurity.automation.testing.JavaParser.visitors.SpringAnnotatio
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
-public class SpringAPIIdentifierTest {
-
+public class SpringAPIIdentifierTest
+{
 	Logger logger;
-	  @Rule
-	  public final ExpectedException exception = ExpectedException.none();
-	
-	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		
-	}
+
+	@Rule
+	public final ExpectedException exception = ExpectedException.none();
 
 	@Before
-	public void setUp() throws Exception {
+	public void setUp() throws Exception
+    {
 		logger = LoggerFactory.getLogger(SpringAPIIdentifierTest.class);
-		//reset Endpoints to empty between tests
+
+		// Reset endpoints to empty between tests
 		SpringAPIIdentifier.setEndpoints(new ArrayList<Endpoint>());
 	}
 	
-	private CompilationUnit generateCompilationUnitFromFile(String file) throws FileNotFoundException{
+	private CompilationUnit generateCompilationUnitFromFile(String file) throws FileNotFoundException
+    {
 		logger.debug("Reading in test file: " + file);
+
 		// Assumes this file is part of this project
 		FileInputStream in = new FileInputStream(file);
 
 		logger.debug("Parsing...");
-		// parse it
+
 		return JavaParser.parse(in);
 	}
 
 	@Test
-	public void testRequestMapping() throws FileNotFoundException{
-		
-		String testFile = System.getProperty("user.dir") + "\\src\\test\\resources\\com\\aspectsecurity\\automation\\testing\\JavaParser\\test\\RequestMappingExample.java";
+	public void testRequestMapping() throws FileNotFoundException
+    {
+		String testFile = SpringAPIIdentifier.TEST_FILE_PATH + "RequestMappingExample.java";
 
 		CompilationUnit cu = generateCompilationUnitFromFile(testFile);
 
 		logger.debug("Running visitors...");
-		// visit and print the methods names
+
+		// Visit and print the methods names
 		cu.accept(new SpringAnnotationAnalyzer(), cu.getPackageDeclaration());
 		
-		//Get endpoints we've found
+		// Get endpoints we've found
 		ArrayList<Endpoint> endpoints = SpringAPIIdentifier.getEndpoints();
-		
-		logger.debug("Found: " + endpoints.size() + " endpoints.");
-		assertEquals(endpoints.size(),7);
+
+		assertEquals(7, endpoints.size());
 	}
 	
 	@Test
-	public void testSpringConsumes() throws FileNotFoundException{
-		String testFile = System.getProperty("user.dir") + "\\src\\test\\resources\\com\\aspectsecurity\\automation\\testing\\JavaParser\\test\\RequestMappingExample.java";
+	public void testSpringConsumes() throws FileNotFoundException
+    {
+		String testFile = SpringAPIIdentifier.TEST_FILE_PATH + "RequestMappingExample.java";
 
 		CompilationUnit cu = generateCompilationUnitFromFile(testFile);
 
 		logger.debug("Running visitors...");
-		// visit and print the methods names
+
+		// Visit and print the methods' names
 		cu.accept(new SpringAnnotationAnalyzer(), cu.getPackageDeclaration());
 		
-		//Get endpoints we've found
+		// Get endpoints we've found
 		ArrayList<Endpoint> endpoints = SpringAPIIdentifier.getEndpoints();
 		
-		assertEquals(endpoints.get(0).getConsumes().toString(),"[]");
-		assertEquals(endpoints.get(1).getConsumes().toString(),"[application/json]");
-		assertEquals(endpoints.get(2).getConsumes().toString(),"[MediaType.APPLICATION_JSON_VALUE]");
-		//Note that arrays with multiple values have 2 spaces after ","
-		assertEquals(endpoints.get(3).getConsumes().toString(),"[MediaType.APPLICATION_JSON_VALUE,  MediaType.APPLICATION_XML_VALUE]");
-		assertEquals(endpoints.get(4).getConsumes().toString(),"[]");
-		assertEquals(endpoints.get(5).getConsumes().toString(),"[]");
-		assertEquals(endpoints.get(6).getConsumes().toString(),"[]");
+		assertEquals(endpoints.get(0).getConsumes().toString(), "[]");
+		assertEquals(endpoints.get(1).getConsumes().toString(), "[application/json]");
+		assertEquals(endpoints.get(2).getConsumes().toString(), "[MediaType.APPLICATION_JSON_VALUE]");
+		// Note: arrays with multiple values have 2 spaces after ","
+		assertEquals(endpoints.get(3).getConsumes().toString(), "[MediaType.APPLICATION_JSON_VALUE,  MediaType.APPLICATION_XML_VALUE]");
+		assertEquals(endpoints.get(4).getConsumes().toString(), "[]");
+		assertEquals(endpoints.get(5).getConsumes().toString(), "[]");
+		assertEquals(endpoints.get(6).getConsumes().toString(), "[]");
 	}
 	
 	@Test
-	public void testSpringHeaders() throws FileNotFoundException{
-		String testFile = System.getProperty("user.dir") + "\\src\\test\\resources\\com\\aspectsecurity\\automation\\testing\\JavaParser\\test\\RequestMappingExample.java";
+	public void testSpringHeaders() throws FileNotFoundException
+    {
+		String testFile = SpringAPIIdentifier.TEST_FILE_PATH + "RequestMappingExample.java";
 
 		CompilationUnit cu = generateCompilationUnitFromFile(testFile);
 
 		logger.debug("Running visitors...");
-		// visit and print the methods names
+
+		// Visit and print the methods' names
 		cu.accept(new SpringAnnotationAnalyzer(), cu.getPackageDeclaration());
 		
-		//Get endpoints we've found
+		// Get endpoints we've found
 		ArrayList<Endpoint> endpoints = SpringAPIIdentifier.getEndpoints();
+
+        // The following should throw exceptions
 		
-		try{
-			//If these do not throw an exception, we should fail, since they are empty
+		try {
 			fail(endpoints.get(0).getHeaders().get(0).getHttpParameterName());
-		} catch(IndexOutOfBoundsException e){
-			logger.debug("Excpetion thrown, as expected.");
+		} catch (IndexOutOfBoundsException e) {
+			logger.debug("Exception thrown, as expected.");
 		}
-		try{
-			//If these do not throw an exception, we should fail, since they are empty
+
+		try {
 			fail(endpoints.get(0).getHeaders().get(0).getDefaultValue());
-		} catch(IndexOutOfBoundsException e){
-			logger.debug("Excpetion thrown, as expected.");
+		} catch (IndexOutOfBoundsException e) {
+			logger.debug("Exception thrown, as expected.");
 		}
-		try{
-			//If these do not throw an exception, we should fail, since they are empty
+
+		try {
 			fail(endpoints.get(1).getHeaders().get(0).getHttpParameterName());
-		} catch(IndexOutOfBoundsException e){
-			logger.debug("Excpetion thrown, as expected.");
+		} catch (IndexOutOfBoundsException e) {
+			logger.debug("Exception thrown, as expected.");
 		}
-		try{
-			//If these do not throw an exception, we should fail, since they are empty
+
+		try {
 			fail(endpoints.get(1).getHeaders().get(0).getDefaultValue());
-
-		} catch(IndexOutOfBoundsException e){
-			logger.debug("Excpetion thrown, as expected.");
+		} catch (IndexOutOfBoundsException e) {
+			logger.debug("Exception thrown, as expected.");
 		}
-		try{
-			//If these do not throw an exception, we should fail, since they are empty
+
+		try {
 			fail(endpoints.get(2).getHeaders().get(0).getHttpParameterName());
-		} catch(IndexOutOfBoundsException e){
-			logger.debug("Excpetion thrown, as expected.");
+		} catch (IndexOutOfBoundsException e) {
+			logger.debug("Exception thrown, as expected.");
 		}
-		try{
-			//If these do not throw an exception, we should fail, since they are empty
-			fail(endpoints.get(2).getHeaders().get(0).getDefaultValue());
 
-		} catch(IndexOutOfBoundsException e){
-			logger.debug("Excpetion thrown, as expected.");
+		try {
+			fail(endpoints.get(2).getHeaders().get(0).getDefaultValue());
+		} catch (IndexOutOfBoundsException e) {
+			logger.debug("Exception thrown, as expected.");
 		}
-		try{
-			//If these do not throw an exception, we should fail, since they are empty
+
+		try {
 			fail(endpoints.get(3).getHeaders().get(0).getHttpParameterName());
-		} catch(IndexOutOfBoundsException e){
-			logger.debug("Excpetion thrown, as expected.");
+		} catch (IndexOutOfBoundsException e) {
+			logger.debug("Exception thrown, as expected.");
 		}
-		try{
-			//If these do not throw an exception, we should fail, since they are empty
+
+		try {
 			fail(endpoints.get(3).getHeaders().get(0).getDefaultValue());
-		} catch(IndexOutOfBoundsException e){
-			logger.debug("Excpetion thrown, as expected.");
+		} catch (IndexOutOfBoundsException e) {
+			logger.debug("Exception thrown, as expected.");
 		}
 		
-		assertEquals(endpoints.get(4).getHeaders().get(0).getHttpParameterName(),"key1");
-		assertEquals(endpoints.get(4).getHeaders().get(0).getDefaultValue(),"val1");
-		assertEquals(endpoints.get(4).getHeaders().get(1).getHttpParameterName(),"key2");
-		assertEquals(endpoints.get(4).getHeaders().get(1).getDefaultValue(),"val2");
-		assertEquals(endpoints.get(5).getHeaders().get(0).getHttpParameterName(),"key1");
-		assertEquals(endpoints.get(5).getHeaders().get(0).getDefaultValue(),"val1");
-		assertEquals(endpoints.get(5).getHeaders().get(1).getHttpParameterName(),"key2");
-		assertEquals(endpoints.get(5).getHeaders().get(1).getDefaultValue(),"val2");
-		assertEquals(endpoints.get(6).getHeaders().get(0).getHttpParameterName(),"key");
-		assertEquals(endpoints.get(6).getHeaders().get(0).getDefaultValue(),"val");
+		assertEquals("key1", endpoints.get(4).getHeaders().get(0).getHttpParameterName());
+		assertEquals("val1", endpoints.get(4).getHeaders().get(0).getDefaultValue());
+		assertEquals("key2", endpoints.get(4).getHeaders().get(1).getHttpParameterName());
+		assertEquals("val2", endpoints.get(4).getHeaders().get(1).getDefaultValue());
+		assertEquals("key1", endpoints.get(5).getHeaders().get(0).getHttpParameterName());
+		assertEquals("val1", endpoints.get(5).getHeaders().get(0).getDefaultValue());
+		assertEquals("key2", endpoints.get(5).getHeaders().get(1).getHttpParameterName());
+		assertEquals("val2", endpoints.get(5).getHeaders().get(1).getDefaultValue());
+		assertEquals("key", endpoints.get(6).getHeaders().get(0).getHttpParameterName());
+		assertEquals("val", endpoints.get(6).getHeaders().get(0).getDefaultValue());
 	}
 	
 	@Test
-	public void testSpringHttpMethod() throws FileNotFoundException{
-		String testFile = System.getProperty("user.dir") + "\\src\\test\\resources\\com\\aspectsecurity\\automation\\testing\\JavaParser\\test\\RequestMappingExample.java";
+	public void testSpringHttpMethod() throws FileNotFoundException
+    {
+        String testFile = SpringAPIIdentifier.TEST_FILE_PATH + "RequestMappingExample.java";
 
 		CompilationUnit cu = generateCompilationUnitFromFile(testFile);
 
 		logger.debug("Running visitors...");
-		// visit and print the methods names
+
+		// Visit and print the methods' names
 		cu.accept(new SpringAnnotationAnalyzer(), cu.getPackageDeclaration());
 		
-		//Get endpoints we've found
+		// Get endpoints we've found
 		ArrayList<Endpoint> endpoints = SpringAPIIdentifier.getEndpoints();
 		
-		assertEquals(endpoints.get(0).getMethods().toString(),"[]");
-		assertEquals(endpoints.get(1).getMethods().toString(),"[RequestMethod.GET]");
-		assertEquals(endpoints.get(2).getMethods().toString(),"[RequestMethod.GET]");
-		assertEquals(endpoints.get(3).getMethods().toString(),"[RequestMethod.GET]");
-		assertEquals(endpoints.get(4).getMethods().toString(),"[RequestMethod.POST]");
-		assertEquals(endpoints.get(5).getMethods().toString(),"[RequestMethod.PUT,  RequestMethod.GET]");
-		assertEquals(endpoints.get(6).getMethods().toString(),"[RequestMethod.POST,  RequestMethod.GET,  RequestMethod.PUT]");
+		assertEquals("[]", endpoints.get(0).getMethods().toString());
+		assertEquals("[RequestMethod.GET]", endpoints.get(1).getMethods().toString());
+		assertEquals("[RequestMethod.GET]", endpoints.get(2).getMethods().toString());
+		assertEquals("[RequestMethod.GET]", endpoints.get(3).getMethods().toString());
+		assertEquals("[RequestMethod.POST]", endpoints.get(4).getMethods().toString());
+        // Note: arrays with multiple values have 2 spaces after ","
+		assertEquals("[RequestMethod.PUT,  RequestMethod.GET]", endpoints.get(5).getMethods().toString());
+		assertEquals("[RequestMethod.POST,  RequestMethod.GET,  RequestMethod.PUT]", endpoints.get(6).getMethods().toString());
 	}
 	
 	@Test
-	public void testSpringHttpProduces() throws FileNotFoundException{
-		String testFile = System.getProperty("user.dir") + "\\src\\test\\resources\\com\\aspectsecurity\\automation\\testing\\JavaParser\\test\\RequestMappingExample.java";
+	public void testSpringHttpProduces() throws FileNotFoundException
+    {
+		String testFile = SpringAPIIdentifier.TEST_FILE_PATH + "RequestMappingExample.java";
 
 		CompilationUnit cu = generateCompilationUnitFromFile(testFile);
 
 		logger.debug("Running visitors...");
-		// visit and print the methods names
+
+		// Visit and print the methods' names
 		cu.accept(new SpringAnnotationAnalyzer(), cu.getPackageDeclaration());
 		
-		//Get endpoints we've found
+		// Get endpoints we've found
 		ArrayList<Endpoint> endpoints = SpringAPIIdentifier.getEndpoints();
 		
 		assertEquals(endpoints.get(0).getProduces().toString(),"[]");
@@ -209,16 +216,18 @@ public class SpringAPIIdentifierTest {
 	}
 	
 	@Test
-	public void testSpringEndpointParams() throws FileNotFoundException{
-		String testFile = System.getProperty("user.dir") + "\\src\\test\\resources\\com\\aspectsecurity\\automation\\testing\\JavaParser\\test\\SpringEndpointParametersExample.java";
+	public void testSpringEndpointParams() throws FileNotFoundException
+    {
+		String testFile = SpringAPIIdentifier.TEST_FILE_PATH + "SpringEndpointParametersExample.java";
 
 		CompilationUnit cu = generateCompilationUnitFromFile(testFile);
 
 		logger.debug("Running visitors...");
-		// visit and print the methods names
+
+		// Visit and print the methods' names
 		cu.accept(new SpringAnnotationAnalyzer(), cu.getPackageDeclaration());
 		
-		//Get endpoints we've found
+		// Get endpoints we've found
 		ArrayList<Endpoint> endpoints = SpringAPIIdentifier.getEndpoints();
 				
 		//public Greeting greeting(@RequestParam(value="name", defaultValue="World") String name) {
@@ -245,52 +254,52 @@ public class SpringAPIIdentifierTest {
 		assertEquals(endpoints.get(1).getParams().get(1).getAnnotation(),"RequestParam");
 		assertFalse(endpoints.get(1).getParams().get(1).isRequired());
 		
-		//these should throw exceptions since there are no params for this endpoint
-		//public String index() {
-		try{
+		// The following should throw exceptions - there are no params for this endpoint
+
+		try {
 			fail(endpoints.get(2).getParams().get(0).getHttpParameterName());
-		} catch(IndexOutOfBoundsException e){
-			logger.debug("Excpetion thrown, as expected.");
+		} catch (IndexOutOfBoundsException e) {
+			logger.debug("Exception thrown, as expected.");
 		}
-		try{
+
+		try {
 			fail(endpoints.get(2).getParams().get(0).getCodeVariableName());
-		} catch(IndexOutOfBoundsException e){
-			logger.debug("Excpetion thrown, as expected.");
+		} catch (IndexOutOfBoundsException e) {
+			logger.debug("Exception thrown, as expected.");
 		}
-		try{
+
+		try {
 			fail(endpoints.get(2).getParams().get(0).getType());
-		} catch(IndexOutOfBoundsException e){
-			logger.debug("Excpetion thrown, as expected.");
+		} catch (IndexOutOfBoundsException e) {
+			logger.debug("Exception thrown, as expected.");
 		}
-		try{
+
+		try {
 			fail(endpoints.get(2).getParams().get(0).getDefaultValue());
-		} catch(IndexOutOfBoundsException e){
-			logger.debug("Excpetion thrown, as expected.");
+		} catch (IndexOutOfBoundsException e) {
+			logger.debug("Exception thrown, as expected.");
 		}
-		try{
+
+		try {
 			fail(endpoints.get(2).getParams().get(0).getAnnotation());
-		} catch(IndexOutOfBoundsException e){
-			logger.debug("Excpetion thrown, as expected.");
+		} catch (IndexOutOfBoundsException e) {
+			logger.debug("Exception thrown, as expected.");
 		}
 		
 		//public String endpoint13( @PathVariable("id1") String id1){
-		assertEquals(endpoints.get(3).getParams().get(0).getHttpParameterName(),"id1");
-		assertEquals(endpoints.get(3).getParams().get(0).getCodeVariableName(),"id1");
-		assertEquals(endpoints.get(3).getParams().get(0).getType(),"String");
-		assertEquals(endpoints.get(3).getParams().get(0).getDefaultValue(),"");
-		assertEquals(endpoints.get(3).getParams().get(0).getAnnotation(),"PathVariable");
+		assertEquals("id1", endpoints.get(3).getParams().get(0).getHttpParameterName());
+		assertEquals("id1", endpoints.get(3).getParams().get(0).getCodeVariableName());
+		assertEquals("String", endpoints.get(3).getParams().get(0).getType());
+		assertEquals("", endpoints.get(3).getParams().get(0).getDefaultValue());
+		assertEquals("PathVariable", endpoints.get(3).getParams().get(0).getAnnotation());
 		assertFalse(endpoints.get(3).getParams().get(0).isRequired());
 		
 		//public Greeting endpoint15(@RequestParam(value="name", defaultValue="World", required=true) String name) {
-		assertEquals(endpoints.get(4).getParams().get(0).getHttpParameterName(),"name");
-		assertEquals(endpoints.get(4).getParams().get(0).getCodeVariableName(),"name");
-		assertEquals(endpoints.get(4).getParams().get(0).getType(),"String");
-		assertEquals(endpoints.get(4).getParams().get(0).getDefaultValue(),"World");
-		assertEquals(endpoints.get(4).getParams().get(0).getAnnotation(),"RequestParam");
+		assertEquals("name", endpoints.get(4).getParams().get(0).getHttpParameterName());
+		assertEquals("name", endpoints.get(4).getParams().get(0).getCodeVariableName());
+		assertEquals("String", endpoints.get(4).getParams().get(0).getType());
+		assertEquals("World", endpoints.get(4).getParams().get(0).getDefaultValue());
+		assertEquals("RequestParam", endpoints.get(4).getParams().get(0).getAnnotation());
 		assertTrue(endpoints.get(4).getParams().get(0).isRequired());
-		
-		
-		
 	}
-	
 }

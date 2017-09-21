@@ -22,13 +22,15 @@ import com.github.javaparser.ast.CompilationUnit;
 
 public class SpringAPIIdentifier {
 
-	private static ArrayList<Endpoint> endpoints = new ArrayList<Endpoint>();;
+	private static ArrayList<Endpoint> endpoints = new ArrayList<>();
+
+	public static final String TEST_FILE_PATH = System.getProperty("user.dir")+"\\src\\test\\resources\\com\\aspectsecurity\\automation\\testing\\JavaParser\\test\\";
 
 	public static void main(String[] args) throws IOException {
 		Logger logger = LoggerFactory.getLogger(SpringAPIIdentifier.class);
 
 		//by default, we'll look at our test dir, but if someone passes in a path, we'll use that instead
-		String filePath = System.getProperty("user.dir")+"\\src\\test\\resources\\com\\aspectsecurity\\automation\\testing\\JavaParser\\test\\";
+		String filePath = TEST_FILE_PATH;
 		if (args.length > 0){
 			filePath = args[0];
 		}
