@@ -47,7 +47,7 @@ public class SpringAPIIdentifierTest
     }
 
     @Test
-    public void testRequestMapping() throws FileNotFoundException
+    public void test_RequestMappingExample() throws FileNotFoundException
     {
         String testFile = SpringAPIIdentifier.TEST_FILE_PATH + "RequestMappingExample.java";
 
@@ -62,47 +62,24 @@ public class SpringAPIIdentifierTest
         ArrayList<Endpoint> endpoints = SpringAPIIdentifier.getEndpoints();
 
         assertEquals(7, endpoints.size());
-    }
 
-    @Test
-    public void testSpringConsumes() throws FileNotFoundException
-    {
-        String testFile = SpringAPIIdentifier.TEST_FILE_PATH + "RequestMappingExample.java";
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        CompilationUnit cu = generateCompilationUnitFromFile(testFile);
-
-        logger.debug("Running visitors...");
-
-        // Visit and print the methods' names
-        cu.accept(new SpringAnnotationAnalyzer(), cu.getPackageDeclaration());
-
-        // Get endpoints we've found
-        ArrayList<Endpoint> endpoints = SpringAPIIdentifier.getEndpoints();
+        // SPRING CONSUMES
 
         assertEquals(endpoints.get(0).getConsumes().toString(), "[]");
         assertEquals(endpoints.get(1).getConsumes().toString(), "[application/json]");
         assertEquals(endpoints.get(2).getConsumes().toString(), "[MediaType.APPLICATION_JSON_VALUE]");
         // Note: arrays with multiple values have 2 spaces after ","
-        assertEquals(endpoints.get(3).getConsumes().toString(), "[MediaType.APPLICATION_JSON_VALUE,  MediaType.APPLICATION_XML_VALUE]");
+        assertEquals(endpoints.get(3).getConsumes().toString(),
+                                        "[MediaType.APPLICATION_JSON_VALUE,  MediaType.APPLICATION_XML_VALUE]");
         assertEquals(endpoints.get(4).getConsumes().toString(), "[]");
         assertEquals(endpoints.get(5).getConsumes().toString(), "[]");
         assertEquals(endpoints.get(6).getConsumes().toString(), "[]");
-    }
 
-    @Test
-    public void testSpringHeaders() throws FileNotFoundException
-    {
-        String testFile = SpringAPIIdentifier.TEST_FILE_PATH + "RequestMappingExample.java";
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        CompilationUnit cu = generateCompilationUnitFromFile(testFile);
-
-        logger.debug("Running visitors...");
-
-        // Visit and print the methods' names
-        cu.accept(new SpringAnnotationAnalyzer(), cu.getPackageDeclaration());
-
-        // Get endpoints we've found
-        ArrayList<Endpoint> endpoints = SpringAPIIdentifier.getEndpoints();
+        // SPRING HEADERS
 
         // The following should throw exceptions
 
@@ -164,22 +141,10 @@ public class SpringAPIIdentifierTest
         assertEquals("val2", endpoints.get(5).getHeaders().get(1).getDefaultValue());
         assertEquals("key", endpoints.get(6).getHeaders().get(0).getHttpParameterName());
         assertEquals("val", endpoints.get(6).getHeaders().get(0).getDefaultValue());
-    }
 
-    @Test
-    public void testSpringHttpMethod() throws FileNotFoundException
-    {
-        String testFile = SpringAPIIdentifier.TEST_FILE_PATH + "RequestMappingExample.java";
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        CompilationUnit cu = generateCompilationUnitFromFile(testFile);
-
-        logger.debug("Running visitors...");
-
-        // Visit and print the methods' names
-        cu.accept(new SpringAnnotationAnalyzer(), cu.getPackageDeclaration());
-
-        // Get endpoints we've found
-        ArrayList<Endpoint> endpoints = SpringAPIIdentifier.getEndpoints();
+        // SPRING HTTP METHOD
 
         assertEquals("[]", endpoints.get(0).getMethods().toString());
         assertEquals("[RequestMethod.GET]", endpoints.get(1).getMethods().toString());
@@ -188,23 +153,12 @@ public class SpringAPIIdentifierTest
         assertEquals("[RequestMethod.POST]", endpoints.get(4).getMethods().toString());
         // Note: arrays with multiple values have 2 spaces after ","
         assertEquals("[RequestMethod.PUT,  RequestMethod.GET]", endpoints.get(5).getMethods().toString());
-        assertEquals("[RequestMethod.POST,  RequestMethod.GET,  RequestMethod.PUT]", endpoints.get(6).getMethods().toString());
-    }
+        assertEquals("[RequestMethod.POST,  RequestMethod.GET,  RequestMethod.PUT]",
+                endpoints.get(6).getMethods().toString());
 
-    @Test
-    public void testSpringHttpProduces() throws FileNotFoundException
-    {
-        String testFile = SpringAPIIdentifier.TEST_FILE_PATH + "RequestMappingExample.java";
+        ///////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-        CompilationUnit cu = generateCompilationUnitFromFile(testFile);
-
-        logger.debug("Running visitors...");
-
-        // Visit and print the methods' names
-        cu.accept(new SpringAnnotationAnalyzer(), cu.getPackageDeclaration());
-
-        // Get endpoints we've found
-        ArrayList<Endpoint> endpoints = SpringAPIIdentifier.getEndpoints();
+        // SPRING HTTP PRODUCES
 
         assertEquals(endpoints.get(0).getProduces().toString(),"[]");
         assertEquals(endpoints.get(1).getProduces().toString(),"[]");
@@ -230,28 +184,28 @@ public class SpringAPIIdentifierTest
         // Get endpoints we've found
         ArrayList<Endpoint> endpoints = SpringAPIIdentifier.getEndpoints();
 
-        //public Greeting greeting(@RequestParam(value="name", defaultValue="World") String name) {
-        assertEquals(endpoints.get(0).getParams().get(0).getHttpParameterName(),"name");
-        assertEquals(endpoints.get(0).getParams().get(0).getCodeVariableName(),"name");
-        assertEquals(endpoints.get(0).getParams().get(0).getType(),"String");
-        assertEquals(endpoints.get(0).getParams().get(0).getDefaultValue(),"World");
-        assertEquals(endpoints.get(0).getParams().get(0).getAnnotation(),"RequestParam");
+        //public Greeting greeting(@RequestParam(value="name", defaultValue="World") String name) { ...
+        assertEquals("name", endpoints.get(0).getParams().get(0).getHttpParameterName());
+        assertEquals("name", endpoints.get(0).getParams().get(0).getCodeVariableName());
+        assertEquals("String", endpoints.get(0).getParams().get(0).getType());
+        assertEquals("World", endpoints.get(0).getParams().get(0).getDefaultValue());
+        assertEquals("RequestParam", endpoints.get(0).getParams().get(0).getAnnotation());
         assertFalse(endpoints.get(0).getParams().get(0).isRequired());
 
-        //public String endpoint11( @RequestParam("id9") String id9, @RequestParam("id10") String id10){
-        assertEquals(endpoints.get(1).getParams().get(0).getHttpParameterName(),"id9");
-        assertEquals(endpoints.get(1).getParams().get(0).getCodeVariableName(),"id9");
-        assertEquals(endpoints.get(1).getParams().get(0).getType(),"String");
-        assertEquals(endpoints.get(1).getParams().get(0).getDefaultValue(),"");
-        assertEquals(endpoints.get(1).getParams().get(0).getAnnotation(),"RequestParam");
+        //public String endpoint11( @RequestParam("id9") String id9, @RequestParam("id10") String id10) { ...
+        assertEquals("id9", endpoints.get(1).getParams().get(0).getHttpParameterName());
+        assertEquals("id9", endpoints.get(1).getParams().get(0).getCodeVariableName());
+        assertEquals("String", endpoints.get(1).getParams().get(0).getType());
+        assertEquals("", endpoints.get(1).getParams().get(0).getDefaultValue());
+        assertEquals("RequestParam", endpoints.get(1).getParams().get(0).getAnnotation());
         assertFalse(endpoints.get(1).getParams().get(0).isRequired());
 
-        //public String endpoint11( @RequestParam("id9") String id9, @RequestParam("id10") String id10){
-        assertEquals(endpoints.get(1).getParams().get(1).getHttpParameterName(),"id10");
-        assertEquals(endpoints.get(1).getParams().get(1).getCodeVariableName(),"id10");
-        assertEquals(endpoints.get(1).getParams().get(1).getType(),"String");
-        assertEquals(endpoints.get(1).getParams().get(1).getDefaultValue(),"");
-        assertEquals(endpoints.get(1).getParams().get(1).getAnnotation(),"RequestParam");
+        //public String endpoint11( @RequestParam("id9") String id9, @RequestParam("id10") String id10) { ...
+        assertEquals("id10", endpoints.get(1).getParams().get(1).getHttpParameterName());
+        assertEquals("id10", endpoints.get(1).getParams().get(1).getCodeVariableName());
+        assertEquals("String", endpoints.get(1).getParams().get(1).getType());
+        assertEquals("", endpoints.get(1).getParams().get(1).getDefaultValue());
+        assertEquals("RequestParam", endpoints.get(1).getParams().get(1).getAnnotation());
         assertFalse(endpoints.get(1).getParams().get(1).isRequired());
 
         // The following should throw exceptions - there are no params for this endpoint
@@ -286,7 +240,7 @@ public class SpringAPIIdentifierTest
             logger.debug("Exception thrown, as expected.");
         }
 
-        //public String endpoint13( @PathVariable("id1") String id1){
+        //public String endpoint13( @PathVariable("id1") String id1) { ...
         assertEquals("id1", endpoints.get(3).getParams().get(0).getHttpParameterName());
         assertEquals("id1", endpoints.get(3).getParams().get(0).getCodeVariableName());
         assertEquals("String", endpoints.get(3).getParams().get(0).getType());
@@ -294,7 +248,7 @@ public class SpringAPIIdentifierTest
         assertEquals("PathVariable", endpoints.get(3).getParams().get(0).getAnnotation());
         assertFalse(endpoints.get(3).getParams().get(0).isRequired());
 
-        //public Greeting endpoint15(@RequestParam(value="name", defaultValue="World", required=true) String name) {
+        //public Greeting endpoint15(@RequestParam(value="name", defaultValue="World", required=true) String name) { ...
         assertEquals("name", endpoints.get(4).getParams().get(0).getHttpParameterName());
         assertEquals("name", endpoints.get(4).getParams().get(0).getCodeVariableName());
         assertEquals("String", endpoints.get(4).getParams().get(0).getType());
