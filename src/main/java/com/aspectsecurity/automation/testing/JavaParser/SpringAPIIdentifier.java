@@ -1,5 +1,13 @@
 package com.aspectsecurity.automation.testing.JavaParser;
 
+import com.aspectsecurity.automation.testing.JavaParser.objects.Endpoint;
+import com.aspectsecurity.automation.testing.JavaParser.objects.Parameter;
+import com.aspectsecurity.automation.testing.JavaParser.visitors.SpringAnnotationAnalyzer;
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ast.CompilationUnit;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -7,22 +15,14 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.stream.Stream;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.aspectsecurity.automation.testing.JavaParser.objects.Endpoint;
-import com.aspectsecurity.automation.testing.JavaParser.objects.Parameter;
-import com.aspectsecurity.automation.testing.JavaParser.visitors.SpringAnnotationAnalyzer;
-import com.github.javaparser.JavaParser;
-import com.github.javaparser.ast.CompilationUnit;
+import java.util.List;
+import java.util.stream.Collectors;
 
 public class SpringAPIIdentifier
 {
     private static ArrayList<Endpoint> endpoints = new ArrayList<>();
 
-    public static final String TEST_FILE_PATH = System.getProperty("user.dir") + "\\src\\test\\resources\\com\\aspectsecurity\\automation\\testing\\JavaParser\\test\\";
+    static final String TEST_FILE_PATH = System.getProperty("user.dir") + "\\src\\test\\resources\\com\\aspectsecurity\\automation\\testing\\JavaParser\\test\\";
 
     public static void main(String[] args) throws IOException
     {
@@ -35,18 +35,22 @@ public class SpringAPIIdentifier
         }
 
         // Find all files that end in .java
-        ArrayList<Path> files = new ArrayList<Path>();
-        Stream<Path> paths = Files.find(Paths.get(filePath), Integer.MAX_VALUE, (path,attrs) -> attrs.isRegularFile() && path.toString().endsWith(".java"));
-        paths.forEach(files::add);
-        paths.close();
+        List<Path> filePaths = Files.find(Paths.get(filePath), Integer.MAX_VALUE, (path, attrs) -> attrs.isRegularFile() && path.toString().endsWith(".java"))
+                .distinct()
+                .collect(Collectors.toList());
 
-        for (Path file : files) {
-            logger.debug("Found file: " + file.toFile().toString());
-            findEndpoints(file.toFile().toString());
-        }
+        filePaths.forEach(it -> {
+            String fileStr = it.toFile().toString();
+            logger.debug("Found file: " + fileStr);
+            try {
+                findEndpoints(fileStr);
+            } catch (FileNotFoundException e) {
+                logger.error("File Not Found.", e);
+            }
+        });
     }
 
-    public static void findEndpoints(String file) throws FileNotFoundException
+    private static void findEndpoints(String file) throws FileNotFoundException
     {
         Logger logger = LoggerFactory.getLogger(SpringAPIIdentifier.class);
 
@@ -82,11 +86,11 @@ public class SpringAPIIdentifier
         }
     }
 
-    public static ArrayList<Endpoint> getEndpoints() {
+    static ArrayList<Endpoint> getEndpoints() {
         return endpoints;
     }
 
-    public static void setEndpoints(ArrayList<Endpoint> endpoints) {
+    static void setEndpoints(ArrayList<Endpoint> endpoints) {
         SpringAPIIdentifier.endpoints = endpoints;
     }
 
