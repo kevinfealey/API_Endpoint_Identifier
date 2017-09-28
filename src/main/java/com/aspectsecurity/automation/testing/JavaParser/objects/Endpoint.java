@@ -1,17 +1,18 @@
 package com.aspectsecurity.automation.testing.JavaParser.objects;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Endpoint
 {
     private String name;
     private String url;
     private String clazzName;
-    private ArrayList<String> consumes = new ArrayList<String>();
-    private ArrayList<String> produces = new ArrayList<String>();
-    private ArrayList<Parameter> headers = new ArrayList<Parameter>();
-    private ArrayList<Parameter> params = new ArrayList<Parameter>();
-    private ArrayList<String> methods = new ArrayList<String>();
+    private ArrayList<String> consumes = new ArrayList<>();
+    private ArrayList<String> produces = new ArrayList<>();
+    private ArrayList<Parameter> headers = new ArrayList<>();
+    private ArrayList<Parameter> params = new ArrayList<>();
+    private ArrayList<String> methods = new ArrayList<>();
 
     public Endpoint() { }
 
@@ -20,9 +21,7 @@ public class Endpoint
         this.url = url;
         this.methods = methods;
 
-        for (Parameter param : parameter) {
-            params.add(param);
-        }
+        Collections.addAll(params, parameter);
     }
 
     public String getName() {
