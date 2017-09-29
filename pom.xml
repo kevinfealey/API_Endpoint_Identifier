@@ -3,12 +3,12 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.aspectsecurity.automation.testing</groupId>
-  <artifactId>JavaParser</artifactId>
+  <artifactId>API_Endpoint_Identifier</artifactId>
   <version>0.0.1-SNAPSHOT</version>
   <packaging>jar</packaging>
 
-  <name>JavaParser</name>
-  <url>http://maven.apache.org</url>
+  <name>API Endpoint Identifier</name>
+  <url>https://github.com/kevinfealey/API_Endpoint_Identifier/</url>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
