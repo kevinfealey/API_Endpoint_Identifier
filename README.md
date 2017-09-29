@@ -1,3 +1,6 @@
+[![Build Status](https://travis-ci.org/kevinfealey/API_Endpoint_Identifier.svg?branch=master)](https://travis-ci.org/kevinfealey/API_Endpoint_Identifier)
+
+
 # API Endpoint Identifier :robot:
 Identify API endpoints (URLs, methods, parameters, and more) by parsing code.
 

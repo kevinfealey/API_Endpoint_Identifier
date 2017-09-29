@@ -2,6 +2,7 @@ package com.aspectsecurity.automation.testing.JavaParser;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.util.ArrayList;
@@ -19,7 +20,10 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
 public class SpringAPIIdentifierTest {
+
     private Logger logger;
+
+    private String testFilePath;
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
@@ -27,7 +31,8 @@ public class SpringAPIIdentifierTest {
     @Before
     public void setUp() throws Exception {
         logger = LoggerFactory.getLogger(SpringAPIIdentifierTest.class);
-
+        File testResourceDirectory = new File("src/test/resources");
+        testFilePath = testResourceDirectory.getAbsolutePath() + "//com//aspectsecurity//automation//testing//JavaParser//test//";
         // Reset endpoints to empty between tests
         SpringAPIIdentifier.setEndpoints(new ArrayList<>());
     }
@@ -45,7 +50,8 @@ public class SpringAPIIdentifierTest {
 
     @Test
     public void test_RequestMappingExample() throws FileNotFoundException {
-        String testFile = SpringAPIIdentifier.TEST_FILE_PATH + "RequestMappingExample.java";
+
+        String testFile = testFilePath + "RequestMappingExample.java";
 
         CompilationUnit cu = generateCompilationUnitFromFile(testFile);
 
@@ -167,7 +173,8 @@ public class SpringAPIIdentifierTest {
 
     @Test
     public void testSpringEndpointParams() throws FileNotFoundException {
-        String testFile = SpringAPIIdentifier.TEST_FILE_PATH + "SpringEndpointParametersExample.java";
+
+        String testFile = testFilePath + "SpringEndpointParametersExample.java";
 
         CompilationUnit cu = generateCompilationUnitFromFile(testFile);
 
