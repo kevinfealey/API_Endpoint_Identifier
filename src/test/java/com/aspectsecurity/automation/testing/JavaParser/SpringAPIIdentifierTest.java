@@ -1,39 +1,40 @@
 package com.aspectsecurity.automation.testing.JavaParser;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.util.ArrayList;
-
+import com.aspectsecurity.automation.testing.JavaParser.objects.Endpoint;
+import com.aspectsecurity.automation.testing.JavaParser.visitors.SpringAnnotationAnalyzer;
+import com.github.javaparser.JavaParser;
+import com.github.javaparser.ast.CompilationUnit;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.aspectsecurity.automation.testing.JavaParser.objects.Endpoint;
-import com.aspectsecurity.automation.testing.JavaParser.visitors.SpringAnnotationAnalyzer;
-import com.github.javaparser.JavaParser;
-import com.github.javaparser.ast.CompilationUnit;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+
+import static org.junit.Assert.*;
 
 public class SpringAPIIdentifierTest {
-    Logger logger;
-
-    private String testFilePath;
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
+    private Logger logger;
+    private String testFilePath;
+    private String packageLessTestFile;
 
     @Before
     public void setUp() throws Exception {
         logger = LoggerFactory.getLogger(SpringAPIIdentifierTest.class);
         File testResourceDirectory = new File("src/test/resources");
         testFilePath = testResourceDirectory.getAbsolutePath() + "//com//aspectsecurity//automation//testing//JavaParser//test//";
+        packageLessTestFile = testResourceDirectory.getAbsolutePath() + "//packageLessEndpoint.java";
         // Reset endpoints to empty between tests
-        SpringAPIIdentifier.setEndpoints(new ArrayList<Endpoint>());
+        SpringAPIIdentifier.setEndpoints(new ArrayList<>());
     }
 
     private CompilationUnit generateCompilationUnitFromFile(String file) throws FileNotFoundException {
@@ -254,5 +255,26 @@ public class SpringAPIIdentifierTest {
         assertEquals("World", endpoints.get(4).getParams().get(0).getDefaultValue());
         assertEquals("RequestParam", endpoints.get(4).getParams().get(0).getAnnotation());
         assertTrue(endpoints.get(4).getParams().get(0).isRequired());
+    }
+
+    @Ignore
+    @Test
+    //This test should be enabled once null checks are finished.
+    public void testPackagelessEndpoint() throws FileNotFoundException {
+        String testFile = packageLessTestFile;
+
+        CompilationUnit cu = generateCompilationUnitFromFile(testFile);
+
+        logger.debug("Running visitors...");
+
+        // Visit and print the methods' names
+        cu.accept(new SpringAnnotationAnalyzer(), cu.getPackageDeclaration());
+
+        // Get endpoints we've found
+        ArrayList<Endpoint> endpoints = SpringAPIIdentifier.getEndpoints();
+
+        //Just be sure we got something from the file....
+        //public Greeting greeting(@RequestParam(value="name", defaultValue="World") String name) { ...
+        assertEquals("name", endpoints.get(0).getParams().get(0).getHttpParameterName());
     }
 }
