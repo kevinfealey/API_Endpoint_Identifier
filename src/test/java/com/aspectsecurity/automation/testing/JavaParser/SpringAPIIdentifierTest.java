@@ -18,24 +18,21 @@ import com.aspectsecurity.automation.testing.JavaParser.visitors.SpringAnnotatio
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
-public class SpringAPIIdentifierTest
-{
+public class SpringAPIIdentifierTest {
     Logger logger;
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
 
     @Before
-    public void setUp() throws Exception
-    {
+    public void setUp() throws Exception {
         logger = LoggerFactory.getLogger(SpringAPIIdentifierTest.class);
 
         // Reset endpoints to empty between tests
         SpringAPIIdentifier.setEndpoints(new ArrayList<Endpoint>());
     }
 
-    private CompilationUnit generateCompilationUnitFromFile(String file) throws FileNotFoundException
-    {
+    private CompilationUnit generateCompilationUnitFromFile(String file) throws FileNotFoundException {
         logger.debug("Reading in test file: " + file);
 
         // Assumes this file is part of this project
@@ -47,8 +44,7 @@ public class SpringAPIIdentifierTest
     }
 
     @Test
-    public void test_RequestMappingExample() throws FileNotFoundException
-    {
+    public void test_RequestMappingExample() throws FileNotFoundException {
         String testFile = SpringAPIIdentifier.TEST_FILE_PATH + "RequestMappingExample.java";
 
         CompilationUnit cu = generateCompilationUnitFromFile(testFile);
@@ -72,7 +68,7 @@ public class SpringAPIIdentifierTest
         assertEquals(endpoints.get(2).getConsumes().toString(), "[MediaType.APPLICATION_JSON_VALUE]");
         // Note: arrays with multiple values have 2 spaces after ","
         assertEquals(endpoints.get(3).getConsumes().toString(),
-                                        "[MediaType.APPLICATION_JSON_VALUE,  MediaType.APPLICATION_XML_VALUE]");
+                "[MediaType.APPLICATION_JSON_VALUE,  MediaType.APPLICATION_XML_VALUE]");
         assertEquals(endpoints.get(4).getConsumes().toString(), "[]");
         assertEquals(endpoints.get(5).getConsumes().toString(), "[]");
         assertEquals(endpoints.get(6).getConsumes().toString(), "[]");
@@ -160,18 +156,17 @@ public class SpringAPIIdentifierTest
 
         // SPRING HTTP PRODUCES
 
-        assertEquals(endpoints.get(0).getProduces().toString(),"[]");
-        assertEquals(endpoints.get(1).getProduces().toString(),"[]");
-        assertEquals(endpoints.get(2).getProduces().toString(),"[]");
-        assertEquals(endpoints.get(3).getProduces().toString(),"[]");
-        assertEquals(endpoints.get(4).getProduces().toString(),"[]");
-        assertEquals(endpoints.get(5).getProduces().toString(),"[application/json,  application/xml]");
-        assertEquals(endpoints.get(6).getProduces().toString(),"[application/json]");
+        assertEquals(endpoints.get(0).getProduces().toString(), "[]");
+        assertEquals(endpoints.get(1).getProduces().toString(), "[]");
+        assertEquals(endpoints.get(2).getProduces().toString(), "[]");
+        assertEquals(endpoints.get(3).getProduces().toString(), "[]");
+        assertEquals(endpoints.get(4).getProduces().toString(), "[]");
+        assertEquals(endpoints.get(5).getProduces().toString(), "[application/json,  application/xml]");
+        assertEquals(endpoints.get(6).getProduces().toString(), "[application/json]");
     }
 
     @Test
-    public void testSpringEndpointParams() throws FileNotFoundException
-    {
+    public void testSpringEndpointParams() throws FileNotFoundException {
         String testFile = SpringAPIIdentifier.TEST_FILE_PATH + "SpringEndpointParametersExample.java";
 
         CompilationUnit cu = generateCompilationUnitFromFile(testFile);
