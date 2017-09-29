@@ -28,13 +28,11 @@ import com.github.javaparser.ast.visitor.VoidVisitorAdapter;
 /**
  * Simple visitor implementation for visiting MethodDeclaration nodes.
  */
-public class SpringAnnotationAnalyzer extends VoidVisitorAdapter<Optional<PackageDeclaration>>
-{
-    Logger logger = LoggerFactory.getLogger(SpringAnnotationAnalyzer.class);
+public class SpringAnnotationAnalyzer extends VoidVisitorAdapter<Optional<PackageDeclaration>> {
+    private Logger logger = LoggerFactory.getLogger(SpringAnnotationAnalyzer.class);
 
     @Override
-    public void visit(MethodDeclaration n, Optional<PackageDeclaration> clazzPackage)
-    {
+    public void visit(MethodDeclaration n, Optional<PackageDeclaration> clazzPackage) {
         /* CHECK METHOD-LEVEL ANNOTATIONS FOR URL AND HTTP METHOD */
 
         // We found a new method to look at
@@ -43,13 +41,18 @@ public class SpringAnnotationAnalyzer extends VoidVisitorAdapter<Optional<Packag
 
         // Get all annotations on method
         NodeList<AnnotationExpr> nodeList = n.getAnnotations();
-        for (AnnotationExpr annotation : nodeList)
-        {
+        for (AnnotationExpr annotation : nodeList) {
+
             // Found an annotation on the method
             logger.debug("Found annotation: " + annotation.getNameAsString());
-            if (annotation.getNameAsString().equals("RequestMapping"))
-            {
-                Endpoint newEndpoint = handleRequestMappingFound(annotation, clazzPackage.get().getName().toString(), methodClazzName);
+
+            if (annotation.getNameAsString().equals("RequestMapping")) {
+                String packageName = "";
+                if (clazzPackage.isPresent()) {
+                    packageName = clazzPackage.get().getNameAsString();
+                }
+
+                Endpoint newEndpoint = handleRequestMappingFound(annotation, packageName, methodClazzName);
 
                 // Check method parameters since we have a RequestMapping
                 newEndpoint.setParams(handleMethodParameters(n.getParameters()));
@@ -61,12 +64,10 @@ public class SpringAnnotationAnalyzer extends VoidVisitorAdapter<Optional<Packag
         super.visit(n, clazzPackage);
     }
 
-    private ArrayList<Parameter> handleMethodParameters(NodeList<com.github.javaparser.ast.body.Parameter> params)
-    {
-        ArrayList<Parameter> parameters = new ArrayList<Parameter>();
+    private ArrayList<Parameter> handleMethodParameters(NodeList<com.github.javaparser.ast.body.Parameter> params) {
+        ArrayList<Parameter> parameters = new ArrayList<>();
 
-        for (com.github.javaparser.ast.body.Parameter param : params)
-        {
+        for (com.github.javaparser.ast.body.Parameter param : params) {
             Parameter myParam = new Parameter();
 
             logger.debug("PARAMETER NAME: " + param.getName());
@@ -79,43 +80,37 @@ public class SpringAnnotationAnalyzer extends VoidVisitorAdapter<Optional<Packag
 
             // Look at annotations that augment our method parameters
             NodeList<AnnotationExpr> annots = param.getAnnotations();
-            for (AnnotationExpr annot : annots)
-            {
-                logger.debug("ANNOTATION ON PARAM: " + annot.toString()); // This returns something like: @RequestParam("id10")
+            for (AnnotationExpr annot : annots) {
+                // This returns something like: @RequestParam("id10")
+                logger.debug("ANNOTATION ON PARAM: " + annot.toString());
 
                 // Look at parameters to the annotation
                 List<Node> annotChildren = annot.getChildNodes();
-                for (Node child : annotChildren)
-                {
-                    if (child.getClass().equals(com.github.javaparser.ast.expr.Name.class))
-                    {
+                for (Node child : annotChildren) {
+                    if (child.getClass().equals(com.github.javaparser.ast.expr.Name.class)) {
+
                         // This is the type of annotation
                         myParam.setAnnotation(child.toString().replaceAll("\"", ""));
-                    }
-                    else if (child.getClass().equals(com.github.javaparser.ast.expr.StringLiteralExpr.class))
-                    {
+                    } else if (child.getClass().equals(com.github.javaparser.ast.expr.StringLiteralExpr.class)) {
                         logger.debug("Found HTTP Parameter: " + child.toString());
                         myParam.setHttpParameterName(child.toString().replaceAll("\"", ""));
-                    }
-                    else if (child.getClass().equals(com.github.javaparser.ast.expr.MemberValuePair.class))
-                    {
-                        List<String> memValPair = handleMemberValuePairSet((MemberValuePair)child);
 
-                        if (memValPair.get(0).equals("value"))
-                        {
-                            myParam.setHttpParameterName(memValPair.get(1).replaceAll("\"", ""));
+                    } else if (child.getClass().equals(com.github.javaparser.ast.expr.MemberValuePair.class)) {
+                        List<String> memValPair = handleMemberValuePairSet((MemberValuePair) child);
+
+                        switch (memValPair.get(0)) {
+                            case "value":
+                                myParam.setHttpParameterName(memValPair.get(1).replaceAll("\"", ""));
+                                break;
+                            case "defaultValue":
+                                myParam.setDefaultValue(memValPair.get(1).replaceAll("\"", ""));
+                                break;
+                            case "required":
+                                myParam.setRequired(Boolean.valueOf(memValPair.get(1).replaceAll("\"", "")));
+                                break;
                         }
-                        else if(memValPair.get(0).equals("defaultValue"))
-                        {
-                            myParam.setDefaultValue(memValPair.get(1).replaceAll("\"", ""));
-                        }
-                        else if (memValPair.get(0).equals("required"))
-                        {
-                            myParam.setRequired(Boolean.valueOf(memValPair.get(1).replaceAll("\"", "")));
-                        }
-                    }
-                    else if (child.getClass().equals("com.github.javaparser.ast.expr.NameExpr"))
-                    {
+
+                    } else if (child.getClass().toString().equals("com.github.javaparser.ast.expr.NameExpr")) {
                         logger.debug("Name expression found in variable. We cannot determine the variable value at this time.");
                     }
 
@@ -129,67 +124,59 @@ public class SpringAnnotationAnalyzer extends VoidVisitorAdapter<Optional<Packag
         return parameters;
     }
 
-    private String getClassNameFromMethod(MethodDeclaration n)
-    {
+    private String getClassNameFromMethod(MethodDeclaration n) {
         Optional<ClassOrInterfaceDeclaration> methodClazzNode;
-        String methodClazzName;
+        String methodClazzName = null;
 
         logger.debug("Getting class name");
 
         // Get the name of the class this method belongs to
         methodClazzNode = n.getAncestorOfType(com.github.javaparser.ast.body.ClassOrInterfaceDeclaration.class);
-        methodClazzName = methodClazzNode.get().getName().toString();
-
-        if (methodClazzName != null)
-        {
-            logger.debug("Found class: " + methodClazzName);
+        if (methodClazzNode.isPresent()) {
+            methodClazzName = methodClazzNode.get().getNameAsString();
         }
-        else
-        {
+
+        if (methodClazzName != null) {
+            logger.debug("Found class: " + methodClazzName);
+        } else {
             logger.debug("Did not find class name.");
         }
 
         return methodClazzName;
     }
 
-    private List<String> handleMemberValuePairSet(MemberValuePair parentNode)
-    {
+    private List<String> handleMemberValuePairSet(MemberValuePair parentNode) {
         return Arrays.asList(parentNode.getChildNodes().get(0).toString().replaceAll("\"", ""),
                 parentNode.getChildNodes().get(1).toString().replaceAll("\"", ""));
     }
 
     // Handles everything to do with the @RequestMapping annotation in Spring
-    private Endpoint handleRequestMappingFound(AnnotationExpr annotation, String clazzPackageName, String methodClazzName)
-    {
+    private Endpoint handleRequestMappingFound(AnnotationExpr annotation, String clazzPackageName, String methodClazzName) {
+
         // This usually means we have a new endpoint
         Endpoint newEndpoint = new Endpoint();
 
-        for (Node annotationAttribute : annotation.getChildNodes())
-        {
-            // Look for parameters passed into the annotation [ex. @RequestMapping("/endpoint2")]
+        // Look for parameters passed into the annotation [ex. @RequestMapping("/endpoint2")]
+        for (Node annotationAttribute : annotation.getChildNodes()) {
 
             // This check makes sure we don't add the annotation name itself (ex. RequestMapping) to the URL list
-            if (annotationAttribute.getClass().isInstance(new com.github.javaparser.ast.expr.Name()))
-            {
+            if (annotationAttribute.getClass().isInstance(new com.github.javaparser.ast.expr.Name())) {
                 logger.debug("Skipping...");
                 continue;
             }
 
             // Onward to discover what the parameter/attribute to the annotation is
             logger.debug("");
-            ArrayList<AnnotationAttribute> annotationAttributes = new ArrayList<AnnotationAttribute>();
+            ArrayList<AnnotationAttribute> annotationAttributes = new ArrayList<>();
             logger.debug("Annotation Attribute: " + annotationAttribute.toString());
 
             // We'll check if it's a key-value pair, since we have to make sure we store those together
-            if (annotationAttribute.getClass().isInstance(new com.github.javaparser.ast.expr.MemberValuePair()))
-            {
+            if (annotationAttribute.getClass().isInstance(new com.github.javaparser.ast.expr.MemberValuePair())) {
                 logger.debug("KeyPair Found...");
                 List<String> newAttribute = handleMemberValuePairSet((MemberValuePair) annotationAttribute);
                 logger.debug("Adding attribute: " + newAttribute.get(0) + " = " + newAttribute.get(1));
                 annotationAttributes.add(new AnnotationAttribute(newAttribute.get(0), newAttribute.get(1)));
-            }
-            else
-            {
+            } else {
                 // Single attribute, not key-value pair; assume URL?
                 // If not, we'll have to re-work this logic to not store as "value"
                 logger.debug("Keypair not found...");
@@ -199,8 +186,7 @@ public class SpringAnnotationAnalyzer extends VoidVisitorAdapter<Optional<Packag
             logger.debug("");
 
             // Cycle though AnnotationAttributes, identify what each thing is, then store appropriately
-            for (AnnotationAttribute attribute : annotationAttributes)
-            {
+            for (AnnotationAttribute attribute : annotationAttributes) {
                 logger.debug("Name: " + attribute.getName());
                 logger.debug("Value: " + attribute.getValue());
 
@@ -208,90 +194,80 @@ public class SpringAnnotationAnalyzer extends VoidVisitorAdapter<Optional<Packag
                 logger.debug("Adding class: " + clazzPackageName + "." + methodClazzName + ".class");
                 newEndpoint.setClazzName(clazzPackageName + "." + methodClazzName + ".class");
 
-                if (attribute.getName().equals("value") || attribute.getName().equals("path"))
-                {
-                    // "value" = URL
+                switch (attribute.getName()) {
+                    case "value":
+                    case "path":
 
-                    logger.debug("Adding URL: " + attribute.getValue());
-                    newEndpoint.setUrl(attribute.getValue().replaceAll("\"", "").trim());
-                    logger.debug("added url: " + newEndpoint.getUrl());
+                        // "value" = URL
+                        logger.debug("Adding URL: " + attribute.getValue());
+                        newEndpoint.setUrl(attribute.getValue().replaceAll("\"", "").trim());
+                        logger.debug("added url: " + newEndpoint.getUrl());
+                        break;
+                    case "method":
 
-                }
-                else if (attribute.getName().equals("method"))
-                {
-                    // "method" = HTTP method
-
-                    logger.debug("Found at least one method... " + attribute.getValue());
-                    String[] methods = HttpMethodParsers.parseSpringRequestMappingHttpMethods(attribute);
-                    for (String httpMethod : methods)
-                    {
-                        if (httpMethod != null)
-                        {
-                            // Array will have a bunch of empty spots, unless 10 HTTP methods are supported
-                            logger.debug("Adding Method: " + httpMethod);
-                            newEndpoint.addMethod(httpMethod);
-                            logger.debug("Added Method: " + httpMethod);
+                        // "method" = HTTP method
+                        logger.debug("Found at least one method... " + attribute.getValue());
+                        String[] methods = HttpMethodParsers.parseSpringRequestMappingHttpMethods(attribute);
+                        for (String httpMethod : methods) {
+                            if (httpMethod != null) {
+                                // Array will have a bunch of empty spots, unless 10 HTTP methods are supported
+                                logger.debug("Adding Method: " + httpMethod);
+                                newEndpoint.addMethod(httpMethod);
+                                logger.debug("Added Method: " + httpMethod);
+                            }
                         }
-                    }
-                }
-                else if (attribute.getName().equals("headers"))
-                {
-                    // "headers" = headers
+                        break;
+                    case "headers":
 
-                    logger.debug("Found at least one header... " + attribute.getValue());
-                    Parameter[] headers = HeaderParsers.parseSpringRequestMappingHeaders(attribute);
-                    for (Parameter httpHeader : headers)
-                    {
-                        if (httpHeader != null)
-                        {
-                            // Array will have a bunch of empty spots, unless 10 HTTP methods are supported
-                            logger.debug("Adding Header: " + httpHeader.getHttpParameterName() + " = " + httpHeader.getDefaultValue());
-                            newEndpoint.addHeaders(httpHeader);
-                            logger.debug("Added Header: " + httpHeader.getHttpParameterName() + " = " + httpHeader.getDefaultValue());
+                        // "headers" = headers
+                        logger.debug("Found at least one header... " + attribute.getValue());
+                        Parameter[] headers = HeaderParsers.parseSpringRequestMappingHeaders(attribute);
+                        for (Parameter httpHeader : headers) {
+                            if (httpHeader != null) {
+                                // Array will have a bunch of empty spots, unless 10 HTTP methods are supported
+                                logger.debug("Adding Header: " + httpHeader.getHttpParameterName() + " = " + httpHeader.getDefaultValue());
+                                newEndpoint.addHeaders(httpHeader);
+                                logger.debug("Added Header: " + httpHeader.getHttpParameterName() + " = " + httpHeader.getDefaultValue());
+                            }
                         }
-                    }
-                }
-                else if (attribute.getName().equals("produces"))
-                {
-                    // "produces" = output format
+                        break;
+                    case "produces":
 
-                    logger.debug("Found at least one produces... " + attribute.getValue());
-                    String[] produces = ProducesParsers.parseSpringRequestMappingProduces(attribute);
-                    for (String outputFormat : produces)
-                    {
-                        if (outputFormat != null)
-                        {
-                            // Array will have a bunch of empty spots, unless 10 HTTP methods are supported
-                            logger.debug("Adding Produces: " + outputFormat);
-                            newEndpoint.addProduces(outputFormat);
-                            logger.debug("Added Produces: " + outputFormat);
+                        // "produces" = output format
+                        logger.debug("Found at least one produces... " + attribute.getValue());
+                        String[] produces = ProducesParsers.parseSpringRequestMappingProduces(attribute);
+                        for (String outputFormat : produces) {
+                            if (outputFormat != null) {
+
+                                // Array will have a bunch of empty spots, unless 10 HTTP methods are supported
+                                logger.debug("Adding Produces: " + outputFormat);
+                                newEndpoint.addProduces(outputFormat);
+                                logger.debug("Added Produces: " + outputFormat);
+                            }
                         }
-                    }
-                }
-                else if (attribute.getName().equals("consumes"))
-                {
-                    // "consumes" = ingest format
+                        break;
+                    case "consumes":
 
-                    logger.debug("Found at least one consumes... " + attribute.getValue());
-                    String[] consumes = ConsumesParsers.parseSpringRequestMappingConsumes(attribute);
-                    for (String ingestFormat : consumes)
-                    {
-                        if (ingestFormat != null)
-                        {
-                            // Array will have a bunch of empty spots, unless 10 HTTP methods are supported
-                            logger.debug("Adding Consumes: " + ingestFormat);
-                            newEndpoint.addConsumes(ingestFormat);
-                            logger.debug("Added Consumes: " + ingestFormat);
+                        // "consumes" = ingest format
+                        logger.debug("Found at least one consumes... " + attribute.getValue());
+                        String[] consumes = ConsumesParsers.parseSpringRequestMappingConsumes(attribute);
+                        for (String ingestFormat : consumes) {
+                            if (ingestFormat != null) {
+
+                                // Array will have a bunch of empty spots, unless 10 HTTP methods are supported
+                                logger.debug("Adding Consumes: " + ingestFormat);
+                                newEndpoint.addConsumes(ingestFormat);
+                                logger.debug("Added Consumes: " + ingestFormat);
+                            }
                         }
-                    }
-                }
-                else if (attribute.getName().equals("name"))
-                {
-                    // "name" = Name
+                        break;
+                    case "name":
 
-                    logger.debug("Adding Name: " + attribute.getValue());
-                    newEndpoint.setName(attribute.getValue().replaceAll("\"", "").trim());
-                    logger.debug("Added Name: " + newEndpoint.getName());
+                        // "name" = Name
+                        logger.debug("Adding Name: " + attribute.getValue());
+                        newEndpoint.setName(attribute.getValue().replaceAll("\"", "").trim());
+                        logger.debug("Added Name: " + newEndpoint.getName());
+                        break;
                 }
             }
         }

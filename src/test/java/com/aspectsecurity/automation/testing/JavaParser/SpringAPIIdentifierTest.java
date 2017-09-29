@@ -20,7 +20,8 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
 public class SpringAPIIdentifierTest {
-    Logger logger;
+
+    private Logger logger;
 
     private String testFilePath;
 
@@ -33,7 +34,7 @@ public class SpringAPIIdentifierTest {
         File testResourceDirectory = new File("src/test/resources");
         testFilePath = testResourceDirectory.getAbsolutePath() + "//com//aspectsecurity//automation//testing//JavaParser//test//";
         // Reset endpoints to empty between tests
-        SpringAPIIdentifier.setEndpoints(new ArrayList<Endpoint>());
+        SpringAPIIdentifier.setEndpoints(new ArrayList<>());
     }
 
     private CompilationUnit generateCompilationUnitFromFile(String file) throws FileNotFoundException {
@@ -49,6 +50,7 @@ public class SpringAPIIdentifierTest {
 
     @Test
     public void test_RequestMappingExample() throws FileNotFoundException {
+
         String testFile = testFilePath + "RequestMappingExample.java";
 
         CompilationUnit cu = generateCompilationUnitFromFile(testFile);
@@ -171,6 +173,7 @@ public class SpringAPIIdentifierTest {
 
     @Test
     public void testSpringEndpointParams() throws FileNotFoundException {
+
         String testFile = testFilePath + "SpringEndpointParametersExample.java";
 
         CompilationUnit cu = generateCompilationUnitFromFile(testFile);
