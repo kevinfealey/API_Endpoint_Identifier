@@ -47,7 +47,7 @@ public class SpringAnnotationAnalyzer extends VoidVisitorAdapter<Optional<Packag
             logger.debug("Found annotation: " + annotation.getNameAsString());
 
             if (annotation.getNameAsString().equals("RequestMapping")) {
-                String packageName = null;
+                String packageName = "";
                 if (clazzPackage.isPresent()) {
                     packageName = clazzPackage.get().getNameAsString();
                 }
