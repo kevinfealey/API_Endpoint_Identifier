@@ -124,7 +124,7 @@ public class SpringAnnotationAnalyzer extends VoidVisitorAdapter<Optional<Packag
         return parameters;
     }
 
-    private String getClassNameFromMethod(MethodDeclaration n) {
+    public String getClassNameFromMethod(MethodDeclaration n) {
         Optional<ClassOrInterfaceDeclaration> methodClazzNode;
         String methodClazzName = null;
 

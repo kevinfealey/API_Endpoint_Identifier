@@ -259,7 +259,6 @@ public class SpringAPIIdentifierTest {
         assertTrue(endpoints.get(4).getParams().get(0).isRequired());
     }
 
-    @Ignore
     @Test
     //This test should be enabled once null checks are finished.
     public void testPackagelessEndpoint() throws FileNotFoundException {
