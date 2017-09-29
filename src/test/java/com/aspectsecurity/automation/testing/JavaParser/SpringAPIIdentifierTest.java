@@ -19,7 +19,7 @@ import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 
 public class SpringAPIIdentifierTest {
-    Logger logger;
+    private Logger logger;
 
     @Rule
     public final ExpectedException exception = ExpectedException.none();
@@ -29,7 +29,7 @@ public class SpringAPIIdentifierTest {
         logger = LoggerFactory.getLogger(SpringAPIIdentifierTest.class);
 
         // Reset endpoints to empty between tests
-        SpringAPIIdentifier.setEndpoints(new ArrayList<Endpoint>());
+        SpringAPIIdentifier.setEndpoints(new ArrayList<>());
     }
 
     private CompilationUnit generateCompilationUnitFromFile(String file) throws FileNotFoundException {
