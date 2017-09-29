@@ -17,14 +17,14 @@ import java.util.EnumSet;
 
 import static org.junit.Assert.assertEquals;
 
-public class SpringAnnotationAnalyzerUnitTests {
+public class SpringAnnotationAnalyzerUnitTest {
 
     Logger logger;
     SpringAnnotationAnalyzer saa;
 
     @Before
     public void setUp() throws Exception {
-        logger = LoggerFactory.getLogger(SpringAnnotationAnalyzerUnitTests.class);
+        logger = LoggerFactory.getLogger(SpringAnnotationAnalyzerUnitTest.class);
         saa = new SpringAnnotationAnalyzer();
     }
 

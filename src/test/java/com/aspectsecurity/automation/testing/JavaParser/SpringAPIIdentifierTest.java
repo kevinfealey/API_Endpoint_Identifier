@@ -5,7 +5,6 @@ import com.aspectsecurity.automation.testing.JavaParser.visitors.SpringAnnotatio
 import com.github.javaparser.JavaParser;
 import com.github.javaparser.ast.CompilationUnit;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -260,7 +259,6 @@ public class SpringAPIIdentifierTest {
     }
 
     @Test
-    //This test should be enabled once null checks are finished.
     public void testPackagelessEndpoint() throws FileNotFoundException {
         String testFile = packageLessTestFile;
 
